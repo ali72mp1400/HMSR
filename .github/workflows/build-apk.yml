@@ -1,5 +1,5 @@
 
-name: Build RSMH Android APK
+name: Build RSMH v1.2 APK
 
 on:
   workflow_dispatch:
@@ -15,8 +15,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract ZIP
-        run: unzip -q RSMH-v1.1.zip -d extracted
+      - name: Extract RSMH v1.2
+        run: |
+          unzip -q RSMH-v1.2.zip -d extracted
+          test -f extracted/RSMH/settings.gradle.kts
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -34,6 +36,7 @@ jobs:
           git clone https://github.com/SagerNet/sing-box.git
           cd sing-box
           TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+          test -n "$TAG"
           git checkout "$TAG"
           make lib_install
           export PATH="$PATH:$(go env GOPATH)/bin"
@@ -46,13 +49,13 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Build Debug APK
+      - name: Build APK
         working-directory: extracted/RSMH
         run: gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: RSMH-Android-APK
+          name: RSMH-v1.2-APK
           path: extracted/RSMH/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
